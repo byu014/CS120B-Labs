@@ -29,7 +29,6 @@ int main(void)
 	unsigned char tempB = 0;
 	unsigned char tempC = 0;
 	unsigned char tempD = 0;
-	unsigned char shiftedWeight = 0;
 	MCUCR = 0x80;
 	//MCUCR = 0x80;
     while (1)
@@ -48,9 +47,8 @@ int main(void)
 		{
 			tempD = tempD | 0x02;	
 		}
-		totalWeight = totalWeight/3;
-		shiftedWeight = totalWeight << 2;
-		tempD = tempD + shiftedWeight;
+		totalWeight = totalWeight & 0xFC;
+		tempD = tempD + totalWeight;
 		PORTD = tempD;
     }
 }
