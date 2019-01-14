@@ -5,7 +5,10 @@
  * Author : Sky
  */ 
 
+
+
 #include <avr/io.h>
+#include <stdlib.h>
 
 
 int main(void)
@@ -20,7 +23,10 @@ int main(void)
 	unsigned char tempB = 0;
 	unsigned char tempC = 0;
 	unsigned char tempD = 0;
-    while (1) 
+	unsigned char shiftedWeight = 0;
+	MCUCR = 0x80;
+	//MCUCR = 0x80;
+    while (1)
     {
 		tempA = PINA;
 		tempB = PINB;
@@ -36,8 +42,10 @@ int main(void)
 		{
 			tempD = tempD | 0x02;	
 		}
-		
-		
+		totalWeight = totalWeight/3;
+		shiftedWeight = totalWeight << 2;
+		tempD = tempD + shiftedWeight;
+		PORTD = tempD;
     }
 }
 
