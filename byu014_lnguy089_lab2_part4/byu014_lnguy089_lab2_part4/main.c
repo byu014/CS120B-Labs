@@ -5,7 +5,13 @@
  * Author : Sky
  */ 
 
-
+/*Bailey Yu, byu014@ucr.edu
+ *Liem Nguyen, lnguy089@ucr.edu
+ *Lab section: 22
+ *Assignment: Lab 2 Exercise 4
+ *I acknoledge all content contained herein, excluding template
+ *or example code, is my own original work.
+ */
 
 #include <avr/io.h>
 #include <stdlib.h>
