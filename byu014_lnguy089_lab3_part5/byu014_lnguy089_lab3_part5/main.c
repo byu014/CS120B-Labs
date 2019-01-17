@@ -7,7 +7,7 @@
 /*Bailey Yu, byu014@ucr.edu
  *Liem Nguyen, lnguy089@ucr.edu
  *Lab section: 22
- *Assignment: Lab 3 Exercise 4
+ *Assignment: Lab 3 Exercise 5
  *I acknowledge all content contained herein, excluding template
  *or example code, is my own original work.
  */
