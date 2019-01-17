@@ -1,10 +1,9 @@
 /*
- * byu014_lnguy089_lab3_part4.c
+ * byu014_lnguy089_lab3_part5.c
  *
- * Created: 1/17/2019 1:16:59 PM
+ * Created: 1/17/2019 1:28:01 PM
  * Author : ucrcse
  */ 
-
 /*Bailey Yu, byu014@ucr.edu
  *Liem Nguyen, lnguy089@ucr.edu
  *Lab section: 22
@@ -21,36 +20,44 @@ unsigned char SetBit(unsigned char x, unsigned char k, unsigned char b) {
 unsigned char GetBit(unsigned char x, unsigned char k) {
 	return ((x & (0x01 << k)) != 0);
 }
+#include <math.h>
+
 
 int main(void)
 {
     /* Replace with your application code */
-	DDRA = 0x00; PORTA = 0x00;
-	DDRB = 0xFF; PORTB = 0x00;
-	DDRC = 0xFF; PORTC = 0x00;
-	unsigned char tempA = 0x00;
-	unsigned char tempB = 0x00;
-	unsigned char tempC = 0x00;
-	unsigned char getA = 0x00;
+	DDRB = 0x6; PORTB = 0x0;
+	DDRD = 0x00; PORTD = 0x00;
+	unsigned short weight = 0;
+	unsigned char tempB = 0;
+	unsigned char tempD = 0;
     while (1) 
     {
-		tempA = PINA;
-		tempB = 0x00;
-		tempC = 0x00;
-		getA = 0x00;
-		unsigned char i = 0;
-		for(i = 0; i < 4; ++i)
+		weight = 0;
+		tempB = PINB;
+		tempD = PIND;
+		weight += tempB & 0x1;
+		for(int i = 0; i < 8; ++i)
 		{
-			getA = GetBit(tempA, i + 4);
-			tempB = SetBit(tempB,i, getA);
+			if(GetBit(tempD, i) == 1)
+			{
+				weight += pow(2,i+1);
+			}
 		}
-		for(i = 0; i < 4; ++i)
+		tempB = 0;
+		if(weight >= 0x46)
 		{
-			getA = GetBit(tempA, i);	
-			tempC = SetBit(tempC, i + 4, getA);
+			tempB = 0x2;
+		}
+		else if(weight < 0x46 && weight > 0x05)
+		{
+			tempB = 0x4;
+		}
+		else if(weight < 0x05)
+		{
+			tempB = 0;
 		}
 		PORTB = tempB;
-		PORTC = tempC;
     }
 }
 
