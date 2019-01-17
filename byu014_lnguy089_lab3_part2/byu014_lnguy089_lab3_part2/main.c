@@ -65,7 +65,7 @@ int main(void)
 		}
 		//tempC = 0xFF;
 		PORTC = tempC;
-		//PORTC = tempA;
+		//PORTC = tempA; 
     }
 }
 
