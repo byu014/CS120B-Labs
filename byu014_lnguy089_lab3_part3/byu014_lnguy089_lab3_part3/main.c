@@ -8,7 +8,7 @@
 /*Bailey Yu, byu014@ucr.edu
  *Liem Nguyen, lnguy089@ucr.edu
  *Lab section: 22
- *Assignment: Lab 3 Exercise 2
+ *Assignment: Lab 3 Exercise 3
  *I acknowledge all content contained herein, excluding template
  *or example code, is my own original work.
  */
@@ -26,7 +26,7 @@ unsigned char GetBit(unsigned char x, unsigned char k) {
 int main(void)
 {
     /* Replace with your application code */
-	DDRA = 0x0; PORTA = 0x0;
+	DDRA = 0x80; PORTA = 0x00;
 	DDRC = 0xFF; PORTC = 0x00;
 	unsigned char tempA = 0x00;
 	unsigned char tempC = 0x00;
@@ -34,37 +34,47 @@ int main(void)
     {
 		tempC = 0x00;
 		tempA = PINA;
-		if(tempA == 1 || tempA == 2)
+		if(tempA == 0x01 || tempA == 0x02)
 		{
-			SetBit(tempC, 5, 1);	
+			tempC = 0x20;	
 		}
-		if(tempA == 3 || tempA == 4)
+		if(tempA == 0x03 || tempA == 0x04)
 		{
-			SetBit(tempC, 4, 1);	
+			tempC = 0x10;	
 		}
-		if(tempA == 5 || tempA == 6)
+		if(tempA == 0x05 || tempA == 0x06)
 		{
-			SetBit(tempC, 3, 1);	
+			tempC = 0x08;	
 		}
-		if(tempA == 7 || tempA == 8 || tempA == 9)
+		if(tempA == 0x07 || tempA == 0x08 || tempA == 0x09)
 		{
-			SetBit(tempC, 2, 1);	
+			tempC = 0x04;	
 		}
-		if(tempA == 10 || tempA == 11 || tempA == 12)
+		if(tempA == 0x0A || tempA == 0x0B || tempA == 0x0C)
 		{
-			SetBit(tempC, 1, 1);
+			tempC = 0x02;
 		}
-		if(tempA == 13 || tempA == 14 || tempA == 15)
+		if(tempA == 0x0D || tempA == 0x0E || tempA == 0x0F)
 		{
-			SetBit(tempC, 0, 1);	
+			tempC = 0x01;	
 		}
 		
-		if(tempA <= 4)
+		if(tempA <= 0x04)
 		{
-			SetBit(tempC, 6,1);	
+			tempC += 0x40;	
+		}
+		if(GetBit(tempA, 4) && GetBit(tempA,5) && !GetBit(tempA, 6))
+		{
+			tempA = 0x80;
+		}
+		else
+		{
+			tempA = 0x00;
 		}
 		//tempC = 0xFF;
+		PORTA = tempA;
 		PORTC = tempC;
+		//PORTC = tempA; 
     }
 }
 
