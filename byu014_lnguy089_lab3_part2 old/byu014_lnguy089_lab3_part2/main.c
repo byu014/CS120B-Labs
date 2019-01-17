@@ -26,7 +26,7 @@ unsigned char GetBit(unsigned char x, unsigned char k) {
 int main(void)
 {
     /* Replace with your application code */
-	DDRA = 0x00; PORTA = 0x00;
+	DDRA = 0x0; PORTA = 0x0;
 	DDRC = 0xFF; PORTC = 0x00;
 	unsigned char tempA = 0x00;
 	unsigned char tempC = 0x00;
@@ -36,7 +36,7 @@ int main(void)
 		tempA = PINA;
 		if(tempA == 1 || tempA == 2)
 		{
-			SetBit(tempC, 4, 1);	
+			SetBit(tempC, 5, 1);	
 		}
 		if(tempA == 3 || tempA == 4)
 		{
@@ -65,7 +65,6 @@ int main(void)
 		}
 		//tempC = 0xFF;
 		PORTC = tempC;
-		//PORTC = tempA;
     }
 }
 
