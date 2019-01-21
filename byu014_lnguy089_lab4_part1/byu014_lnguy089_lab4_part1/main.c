@@ -14,63 +14,89 @@
  */
 
 #include <avr/io.h>
-enum States{Start, s0, s1} state;
+enum States{Start,init, s0, s1, wait} state;
 unsigned char tempA;
-unsigned char tempB;
+unsigned char tempB = 0x0;
+unsigned char flag = 1;
 
 void Tick()
 {
 	tempA = PINA;
-	tempB = 0x0;
 	switch(state)
 	{
 		case Start:
-			state = s0;
+			state = init;
 			break;
 		
+		case init:
+			state = wait;
+		
 		case s0:
-			if(tempA == 0x1)
-			{
-				state = s1;
-			}
-			else
-			{
-				state = s0;
-			}
+			state = wait;
 			break;
 		
 		case s1:
+			state = wait;
+			break;
+			
+		case wait:
+			if(tempA == 0x0)
+			{
+				flag = 0;
+			}
+			if(flag)
+			{
+				break;
+			}
 			if(tempA == 0x1)
 			{
-				state = s0;
+				if(tempB == 0x2)
+				{
+					state = s0;
+				}
+				else if(tempB == 0x1)
+				{
+					state = s1;
+				}
 			}
 			else
 			{
-				state = s1;
+				state = wait;
 			}
 			break;
-		
 		default:
 			break;
 	}
 	switch(state)
 	{
 		case Start:
+			break;
+			
+		case init:
+			tempB = 0x1;
+			PORTB = tempB;
+			flag = 1;
+			break;
+			
+		case wait:
 			break;
 		
 		case s0:
 			tempB = 0x1;
+			PORTB = tempB;
+			flag = 1;
 			break;
 			
 		case s1:
 			tempB  = 0x2;
+			PORTB = tempB;
+			flag = 1;
 			break;
 		
 		default:
 			break;
 		
 	}
-		PORTB = tempB;
 }
 int main(void)
 {

@@ -17,6 +17,7 @@
 enum States{Start, init, inc, dec,wait, zero} state;
 char unsigned tempA;
 char unsigned tempC;
+unsigned char flag = 1;
 
 void Tick()
 {
@@ -29,63 +30,30 @@ void Tick()
 			break;
 			
 		case init:
-			if(tempA == 0x1)
-			{
-				state = inc;
-			}
-			else if(tempA == 0x2)
-			{
-				state = dec;
-			}
-			else if(tempA == 0x3)
-			{
-				state = zero;
-			}
-			else if(tempA == 0x0)
-			{
-				state = wait;
-			}
+			state = wait;
 			break;
 		
 		case inc:
-			if(tempA == 0x1)
-			{
-				state = inc;
-			}
-			else if(tempA == 0x2)
-			{
-				state = dec;
-			}
-			else if(tempA == 0x3)
-			{
-				state = zero;
-			}
-			else if(tempA == 0x0)
-			{
-				state = wait;
-			}
+			state = wait;
 			break;
 		
 		case dec:
-			if(tempA == 0x1)
-			{
-				state = inc;
-			}
-			else if(tempA == 0x2)
-			{
-				state = dec;
-			}
-			else if(tempA == 0x3)
-			{
-				state = zero;
-			}
-			else if(tempA == 0x0)
-			{
-				state = wait;
-			}
+			state = wait;
 			break;
 			
 		case wait:
+			if (tempA == 0x3)
+			{
+				state = zero;
+			}
+			if(tempA == 0x00)
+			{
+				flag = 0;
+			}
+			if(flag == 1)
+			{
+				break;
+			}
 			if(tempA == 0x1)
 			{
 				state = inc;
@@ -93,10 +61,6 @@ void Tick()
 			else if(tempA == 0x2)
 			{
 				state = dec;
-			}
-			else if(tempA == 0x3)
-			{
-				state = zero;
 			}
 			else if(tempA == 0x0)
 			{
@@ -106,22 +70,7 @@ void Tick()
 			
 		
 		case zero:
-			if(tempA == 0x1)
-			{
-				state = inc;
-			}
-			else if(tempA == 0x2)
-			{
-				state = dec;
-			}
-			else if(tempA == 0x3)
-			{
-				state = zero;
-			}
-			else if(tempA == 0x0)
-			{
-				state = wait;
-			}
+			state = wait;
 			break;
 		
 		default:
@@ -144,6 +93,7 @@ void Tick()
 				tempC += 1;
 				PORTC = tempC;
 			}
+			flag = 1;
 			break;
 		
 		case dec:
@@ -152,12 +102,14 @@ void Tick()
 				tempC -= 1;
 				PORTC = tempC;
 			}
+			flag = 1;
 			break;
 		
 		case wait:
 			break;
 		
 		case zero:
+			flag = 1;
 			tempC = 0;
 			PORTC = 0;
 			break;
