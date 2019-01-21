@@ -26,7 +26,7 @@ void Tick()
 	switch(state)
 	{
 		case Start:
-			state = unlocked1;
+			state = locked1;
 			break;
 		
 		case wait:
