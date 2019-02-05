@@ -26,6 +26,8 @@ unsigned char tempC = 0x00;
 enum States prevState;
 unsigned char score = 5;
 unsigned char reset = 0;
+unsigned char countFlag = 0;
+unsigned char winTime = 10;
 
 void Tick()
 {
@@ -120,52 +122,64 @@ void Tick()
 			break;
 		
 		case init:
+			 score = 5;
+			 LCD_Cursor(1);
+			 LCD_WriteData(score + '0');
 			 tempC = 0x01;
-			 PORTC = tempC;
+			 PORTD = tempC;
 			 break;
 			
 		case lshift:
 			tempC = tempC << 1;
-			PORTC = tempC;
+			PORTD = tempC;
 			break;
 		
 		case rshift:
 			tempC = tempC >> 1;
-			PORTC = tempC;
+			PORTD = tempC;
 			break;
 		
 		case pause:
-			if(reset < 10 && score == 9)
-			{
-				reset += 1;
-				break;
-			}
 			if(tempC == 0x02)
 			{
-				if(score == 8)
+				if(score == 9 && winTime > 0)
 				{
-					score = 9;
-					LCD_DisplayString(1, "WIN");
+					//score = 9;
+					LCD_Cursor(1);
+					LCD_DisplayString(1,"WIN");
+					winTime -= 1;
+					if(winTime == 0)
+					{
+						state = start;
+						winTime = 10;
+						LCD_ClearScreen();
+						break;
+					}
 				}
-				else
+				else if(countFlag)
 				{
 					score += 1;
-					LCD_DisplayString(1, score + '0');
+					LCD_Cursor(1);
+					LCD_WriteData(score + '0');
+					countFlag = 0;
 				}
 				break;
 			}
 			else
 			{
-				if(score > 0)
+				if(score > 0 && countFlag)
 				{
 					score -= 1;
+					countFlag = 0;
 				}
-				LCD_DisplayString(1, score + '0');
+				LCD_Cursor(1);
+				LCD_WriteData(score + '0');
 				break;
 			}
 			break;
 		
 		case wait:
+		countFlag = 1;
 		break;
 		
 		
@@ -218,9 +232,12 @@ int main(void)
 	DDRA = 0x00; PORTA = 0xFF;
 	DDRC = 0xFF;
 	PORTC = 0x00;
+	DDRD = 0xFF;
+	PORTD = 0x00;
 	TimerSet(300);
 	TimerOn();
-	
+	LCD_init();
+	//LCD_DisplayString(1, "5");
     while (1) 
     {
 		Tick();

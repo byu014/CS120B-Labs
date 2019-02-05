@@ -74,8 +74,9 @@ void TimerSet(unsigned long M) {
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 enum States{start, wait, inc, dec, reset} state;
-unsigned char currentNumber = 0;
-unsigned char tempC = 0x00;
+//unsigned char currentNumber = 0;
+unsigned char tempC = 0;
+unsigned char tempA = 0;
 void Tick()
 {
 	switch(state)
@@ -85,17 +86,18 @@ void Tick()
 			break;
 		
 		case wait:
-			if(~PINA & 0x03 == 0x03)
+			tempA = ~PINA;
+			if(tempA == 0x03)
 			{
 				state = reset;
 				break;
 			}
-			if(~PINA & 0x02 == 0x02)
+			else if(tempA == 0x02)
 			{
 				state = dec;
 				break;
 			}
-			else if(~PINA & 0x02 == 0x01)
+			else if(tempA == 0x01)
 			{
 				state = inc;
 				break;
@@ -107,12 +109,13 @@ void Tick()
 			break;
 		
 		case inc:
-			if(~PINA & 0x03 == 0x03)
+			tempA = ~PINA;
+			if(tempA == 0x03)
 			{
 				state = reset;
 				break;
 			}
-			if(~PINA & 0x01 == 0x01)
+			else if(tempA == 0x01)
 			{
 				state = inc;
 				break;
@@ -124,12 +127,13 @@ void Tick()
 			break;
 		
 		case dec:
-			if(~PINA & 0x03 == 0x03)
+			tempA = ~PINA;
+			if(tempA == 0x03)
 			{
 				state = reset;
 				break;
 			}
-			if(~PINA & 0x02 == 0x02)
+			else if(tempA  == 0x02)
 			{
 				state = dec;
 				break;
@@ -141,7 +145,8 @@ void Tick()
 			}
 		
 		case reset:
-			if(~PINA & 0x03)
+			tempA = ~PINA;
+			if(tempA == 0x03)
 			{
 				state = reset;
 				break;
@@ -164,24 +169,30 @@ void Tick()
 			break;
 		
 		case inc:
-			if(tempC <= 9)
+			if(tempC < 9)
 			{
 				tempC += 1;
-				LCD_DisplayString(1, tempC + '0');
+				//LCD_DisplayString(1, tempC + '0');
+				LCD_Cursor(1);
+				LCD_WriteData(tempC + '0');
 			}
 			break;
 		
 		case dec:
-			if(tempC >= 0)
+			if(tempC > 0)
 			{
 				tempC -= 1;
-				LCD_DisplayString(1, tempC + '0');
+				//LCD_DisplayString(1, tempC + '0');
+				LCD_Cursor(1);
+				LCD_WriteData(tempC + '0');
 			}
 			break;
 		
 		case reset:
 			tempC = 0;
-			LCD_DisplayString(1, 0 + '0');
+			//LCD_DisplayString(1, 0 + '0');
+			LCD_Cursor(1);
+			LCD_WriteData(tempC + '0');
 			break;
 		
 		default:
@@ -191,14 +202,16 @@ void Tick()
 
 int main(void)
 {
-	DDRA = 0xFF; PORTA = 0xFF;
+	DDRA = 0x00; PORTA = 0xFF;
 	DDRC = 0xFF; PORTC = 0x00;
 	DDRD = 0xFF; PORTD = 0x00;
     /* Replace with your application code */
 	TimerSet(1000);
 	TimerOn();
 	LCD_init();
-	LCD_DisplayString(1, currentNumber + '0');
+	//LCD_DisplayString(1, currentNumber + '0');
+	LCD_Cursor(1);
+	LCD_WriteData(tempC + '0');
     while (1) 
     {
 		Tick();
