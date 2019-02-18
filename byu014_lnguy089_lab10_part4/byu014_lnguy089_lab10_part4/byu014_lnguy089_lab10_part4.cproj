@@ -12,9 +12,9 @@
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
-    <AssemblyName>byu014_lnguy089_lab9_part3</AssemblyName>
-    <Name>byu014_lnguy089_lab9_part3</Name>
-    <RootNamespace>byu014_lnguy089_lab9_part3</RootNamespace>
+    <AssemblyName>byu014_lnguy089_lab10_part4</AssemblyName>
+    <Name>byu014_lnguy089_lab10_part4</Name>
+    <RootNamespace>byu014_lnguy089_lab10_part4</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
