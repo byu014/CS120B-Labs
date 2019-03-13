@@ -207,16 +207,18 @@ int main(void)
 			//delay_ms(200);
 		
 		//LCD_WriteData(j);
-		
+		unsigned char string[32];
 		set_adc_pin(0x04);
 		lr = ADC;
 		set_adc_pin(0x05);
 		ud =ADC;
 		sprintf(string, "x: %d, y: %d", lr, ud);
+		LCD_DisplayString(1,string);
+		
 		//set_adc_pin(0x06);
 		//unsigned short pot = ADC;
 		//sprintf(string, "%d", pot);
-		LCD_DisplayString(1, string);
+		//LCD_DisplayString(1, string);
 		
 		//if(lr < (512 - 100) && abs(ud - 512) < 256) // logic for going left
 		//{

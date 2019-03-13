@@ -107,8 +107,11 @@ struct snake* mySnake = NULL;
 struct food* snakeFood = NULL;
 unsigned char eaten = 0;
 unsigned char gameOver = 0;
+unsigned tempHeadX = 0;
+unsigned tempHeadY = 0;
 unsigned char coordinates[8][8];
 struct snake* head = NULL;
+unsigned char speed = 0;
 unsigned char EEMEM EEMEMhighScore = 0;
 
 unsigned char SetBit(unsigned char x, unsigned char k, unsigned char b) {
@@ -154,11 +157,12 @@ void TimerSet(unsigned long M)
 	_avr_timer_M = M;
 	_avr_timer_cntcurr = _avr_timer_M;
 }
-
+unsigned char msgShown = 0;
 void TimerISR()
 {
 	
 	unsigned char i;
+	//static char msgShown = 0;
 	for(i = 0; i < tasksNum; ++i)
 	{
 		if(tasks[i].elapsedTime >= tasks[i].period)
@@ -168,36 +172,64 @@ void TimerISR()
 		}
 		tasks[i].elapsedTime += 1;
 	}
-	unsigned short potentiometer = 0;
-	static unsigned short changed = 0;
-	set_adc_pin(0x06);
-	potentiometer = ADC;
-	if(potentiometer > 1000 && tasks[2].period != 500) // 5 different game speeds ranging from 100 ms to 500 ms
-	{
-		tasks[2].period = 500 ;
-		changed = 1;
-	}
-	else if(potentiometer < 200 && tasks[2].period != 100)
-	{
-		tasks[2].period = 100 ;
-	}
-	else if(potentiometer < 400 && tasks[2].period != 200)
-	{
-		tasks[2].period = 200 ;
-	}
-	else if(potentiometer < 600 && tasks[2].period != 300)
-	{
-		tasks[2].period = 300 ;
-	}
-	else if(potentiometer < 800 && tasks[2].period != 400)
-	{
-		tasks[2].period = 400 ;
-	}
-	if(changed)
-	{
-		tasks[2].elapsedTime = 0;
-		changed = 0;
-	}
+			unsigned short potentiometer = 0;
+			static unsigned short changed = 0;
+			set_adc_pin(0x06);
+			potentiometer = ADC;
+			if((potentiometer >= 200 && potentiometer < 300) && tasks[2].period != 300)
+			{
+				tasks[2].period = 300;
+				changed = 1;
+			}
+			else if(potentiometer < 100 && tasks[2].period != 100)
+			{
+				tasks[2].period = 100 ;
+				changed = 1;
+			}
+			else if((potentiometer >= 100 && potentiometer < 200) && tasks[2].period != 200)
+			{
+				tasks[2].period = 200;
+				changed = 1;
+			}
+			else if((potentiometer >= 300 && potentiometer < 400) && tasks[2].period != 400)
+			{
+				tasks[2].period = 400;
+				changed = 1;
+			}
+			else if((potentiometer >= 400 && potentiometer < 500) && tasks[2].period != 500)
+			{
+				tasks[2].period = 500;
+				changed = 1;
+			}
+			else if((potentiometer >= 500 && potentiometer < 600) && tasks[2].period != 600)
+			{
+				tasks[2].period = 600;
+				changed = 1;
+			}
+			else if((potentiometer >= 600 && potentiometer < 700) && tasks[2].period != 700)
+			{
+				tasks[2].period = 700;
+				changed = 1;
+			}
+			else if((potentiometer >= 700 && potentiometer < 800) && tasks[2].period != 800)
+			{
+				tasks[2].period = 800;
+				changed = 1;
+			}
+			else if(potentiometer >= 800  && tasks[2].period != 900)
+			{
+				tasks[2].period = 900;
+				changed = 1;
+			}
+			speed = tasks[2].period/100;
+			
+			if(changed)
+			{
+				msgShown = 0;
+				tasks[2].elapsedTime = 0;
+				changed = 0;
+			}
+	
 }
 
 ISR(TIMER1_COMPA_vect) {
@@ -233,13 +265,20 @@ int TickFct_startGame(int state)
 			else if(!msgDisplayed)
 			{
 				LCD_ClearScreen();
-				LCD_DisplayString(17, "Press to start");
+				LCD_DisplayStringNoClear(17, "Press start S: ");
 				LCD_DisplayStringNoClear(1, "High Score: ");
 				//eeprom_write_byte(&EEMEMhighScore,8); reset eemem value for testing purposes
 				sprintf(highScore,"%d", eeprom_read_byte(&EEMEMhighScore));
 				LCD_DisplayStringNoClear(13, highScore);
 				msgDisplayed = 1;
 			}
+			if(!msgShown)
+			{
+				LCD_Cursor(32);
+				LCD_WriteData('0' + speed);
+				msgShown = 1;
+			}
+			
 			break;
 		
 		case startGame_wait:
@@ -257,6 +296,7 @@ int TickFct_startGame(int state)
 				LCD_DisplayString(1, "Resetting");
 				reset = 1;
 				gameStart = 0;
+				msgShown = 0;
 				next = startGame_start;
 				state = startGame_wait;
 			}
@@ -292,6 +332,10 @@ int TickFct_direction(int state)
 				state = direction_start;
 				break;
 			}
+						if(gameOver)
+						{
+							break;
+						}
 			set_adc_pin(0x04);
 			lr = ADC;
 			set_adc_pin(0x05);
@@ -350,6 +394,15 @@ struct snake* setSnakeDirection(struct snake* snakeParameter)
 	}
 	return cur; //basically head of snake
 }
+struct snake* findHead(struct snake* snakeParameter)
+{
+	struct snake* cur = snakeParameter;
+	while(cur->next != NULL)
+	{
+		cur = cur->next;
+	}
+	return cur; //basically head of snake
+}
 unsigned char crashed = 0;
 void moveSnake(struct snake* snakeParameter, struct snake* head)
 {
@@ -367,14 +420,14 @@ void moveSnake(struct snake* snakeParameter, struct snake* head)
 	struct snake* cur = snakeParameter;
 	unsigned char tempColVal = 0x00;
 	unsigned char tempColSel = 0xFF;
-	while(cur != NULL)
+	while(cur != NULL) // fills 2d array with coordinates that are lit
 	{
-		coordinates[cur->y][cur->x] = 1;
+		coordinates[cur->y][cur->x] += 1;
 		cur = cur->next;
 		numElements += 1;
 	}
 
-	if(head->x == snakeFood->x && head->y == snakeFood->y)
+	if(tempHeadX == snakeFood->x && tempHeadY == snakeFood->y) // replaces food position as new head
 	{
 		struct snake* newHead = malloc(sizeof(struct snake));
 		newHead->x = snakeFood->x;
@@ -399,7 +452,11 @@ void moveSnake(struct snake* snakeParameter, struct snake* head)
 			gameOver = 1;
 		}
 	}
-	
+	else if(coordinates[head->y][head->x] >1) // checks collision, if coordinates at head has two points, means head is sharing a space with part of its body
+	{
+		crashed = 1;
+		return;
+	}
 	generateFood( tempColVal, tempColSel, coordinates);
 }
 
@@ -421,7 +478,7 @@ void checkCrash(struct snake* snakeParameter, struct snake* head)
 		crashed = 1;
 	}
 }
-void generateFood(unsigned char tempColVal, unsigned char tempColSel, unsigned char coordinates[8][8])
+void generateFood(unsigned char tempColVal, unsigned char tempColSel, unsigned char coordinates[8][8])// generates random food coordinate and displays the snake
 {
 	unsigned char i = 0;
 	static unsigned char j = 0;
@@ -449,7 +506,7 @@ void generateFood(unsigned char tempColVal, unsigned char tempColSel, unsigned c
 	eaten = 0;
 	unsigned char tempX = rand() % 8;
 	unsigned char tempY = rand() % 8;
-	while(coordinates[tempY][tempX] == 1)
+	while(coordinates[tempY][tempX] >= 1) // makes sure that food doesnt spawn on top of snake
 	{
 		tempX = rand() % 8;
 		tempY = rand() % 8;
@@ -462,10 +519,6 @@ void generateFood(unsigned char tempColVal, unsigned char tempColSel, unsigned c
 	PORTB = tempColSel;
 }
 
-void foodCollide()
-{
-	
-}
 
 
 enum gameSM{game_start, game_running, game_gameOver};
@@ -474,15 +527,9 @@ int TickFct_game(int state)
 	static unsigned char msgDisplayed2 = 0;
 	unsigned char column_val = 0x00; // sets the pattern displayed on columns
 	unsigned char column_sel = 0xFF; // grounds column to display pattern, 
-	unsigned char i = 0;
-	unsigned char j = 0;
-	for(i = 0; i < 8; ++i)
-	{
-		for(j = 0; j < 8; ++j)
-		{
-			coordinates[i][j] = 0;
-		}
-	}
+	//static unsigned char flash = 0x00;
+	
+
 	switch(state)
 	{
 		case game_start:
@@ -530,22 +577,28 @@ int TickFct_game(int state)
 			if(!direction)
 			break;
 			
-			head = setSnakeDirection(mySnake);
+			//head = setSnakeDirection(mySnake);
+			head = findHead(mySnake);
+			tempHeadX = head->x;
+			tempHeadY = head->y;
 			if(curDirection == 'l') //  cases makes sure you can't do a 180 turn 
 			{
 				if(direction == 'u')
 				{
 					curDirection = 'u';
-					head->y -= 1;
+					//head->y -= 1;
+					tempHeadY -=1;
 				}
 				else if(direction == 'd')
 				{
 					curDirection = 'd';
-					head->y += 1;
+					//head->y += 1;
+					tempHeadY += 1;
 				}
 				else
 				{
-					head->x +=1 ;
+					//head->x +=1 ;
+					tempHeadX += 1;
 				}
 			}
 			else if(curDirection == 'r') //  cases makes sure you can't do a 180 turn
@@ -553,16 +606,19 @@ int TickFct_game(int state)
 				if(direction == 'u')
 				{
 					curDirection = 'u';
-					head->y -= 1;
+					//head->y -= 1;
+					tempHeadY -=1;
 				}
 				else if(direction == 'd')
 				{
 					curDirection = 'd';
-					head->y += 1;
+					//head->y += 1;
+					tempHeadY += 1;
 				}
 				else
 				{
-					head->x -=1 ;
+					//head->x -=1 ;
+					tempHeadX -=1;
 				}
 			}
 			else if(curDirection == 'u') //  cases makes sure you can't do a 180 turn
@@ -570,16 +626,19 @@ int TickFct_game(int state)
 				if(direction == 'l')
 				{
 					curDirection = 'l';
-					head->x += 1;
+					//head->x += 1;
+					tempHeadX += 1;
 				}
 				else if(direction == 'r')
 				{
 					curDirection = 'r';
-					head->x -= 1;
+					//head->x -= 1;
+					tempHeadX -=1;
 				}
 				else
 				{
-					head->y -=1 ;
+					//head->y -=1 ;
+					tempHeadY -=1;
 				}
 			}
 			else if(curDirection == 'd') //  cases makes sure you can't do a 180 turn
@@ -587,26 +646,37 @@ int TickFct_game(int state)
 				if(direction == 'l')
 				{
 					curDirection = 'l';
-					head->x += 1;
+					//head->x += 1;
+					tempHeadX +=1;
 				}
 				else if(direction == 'r')
 				{
 					curDirection = 'r';
-					head->x -= 1;
+					//head->x -= 1;
+					tempHeadX -=1;
 				}
 				else
 				{
-					head->y +=1 ;
+					//head->y +=1 ;
+					tempHeadY +=1;
 				}
 			}
 			
 			//checkCrash(mySnake, head);
-			if(head->x < 0 || head->x > 7 || head->y > 7 || head->y < 0 || crashed == 1) // head ran into side game over
+			//if(head->x < 0 || head->x > 7 || head->y > 7 || head->y < 0 || crashed == 1) // head ran into side game over
+			if(tempHeadX <0 || tempHeadX > 7 || tempHeadY > 7 || tempHeadY < 0 || crashed ==1)
 			{
 				gameOver = 1;
 				state = game_gameOver;
 				break;
 			}
+			if(tempHeadX != snakeFood->x || tempHeadY != snakeFood->y)
+			{
+				setSnakeDirection(mySnake);
+			head->x = tempHeadX;
+			head->y = tempHeadY;
+			}
+
 			//moveSnake(mySnake, head,coordinates);
 			
 			break;
@@ -615,10 +685,14 @@ int TickFct_game(int state)
 		{
 			if(!msgDisplayed2)
 			{
+				PORTC = 0xFF;
+				PORTB = 0x00;
 				LCD_DisplayString(1,"Game Over");
 				LCD_DisplayStringNoClear(17,"Press to restart");
 				msgDisplayed2 = 1;
 			}
+			
+			
 			if(reset)
 			{
 				gameOver = 0;
@@ -660,6 +734,10 @@ int TickFct_showSnake(int state)
 			if(reset)
 			{
 				state = showSnake_start;
+				break;
+			}
+			if(gameOver)
+			{
 				break;
 			}
 			
