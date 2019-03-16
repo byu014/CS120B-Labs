@@ -349,6 +349,7 @@ int TickFct_direction(int state)
 				direction = 'l';
 				imageNum = 0x01;
 				LCD_WriteData(0x01);// custom image
+				
 			}
 			else if(lr > (512 + 300) && abs(ud - 512) < 256)// logic for going right
 			{
@@ -372,6 +373,7 @@ int TickFct_direction(int state)
 			{
 				curDirection = direction;
 			}
+			LCD_Cursor(29);
 			//LCD_ClearScreen();
 			//LCD_Cursor(1);
 			//LCD_WriteData(direction);
@@ -485,6 +487,7 @@ void generateFood(unsigned char tempColVal, unsigned char tempColSel, unsigned c
 	if(!eaten) 
 	{
 		coordinates[snakeFood->y][snakeFood->x] = 1;
+		
 		for(i = 0; i < 8; ++i)
 		{
 			if(coordinates[j][i] == 1)
@@ -497,7 +500,7 @@ void generateFood(unsigned char tempColVal, unsigned char tempColSel, unsigned c
 		PORTC = tempColVal;
 		PORTB = tempColSel;
 		j+= 1;
-		if(j == 8)// led matrix multiplexing logic one row at a time every ms
+		if(j >= 8)// led matrix multiplexing logic one row at a time every ms
 		{
 			j = 0;
 		}
@@ -546,6 +549,7 @@ int TickFct_game(int state)
 			snakeFood = malloc(sizeof(struct food));
 			snakeFood->x = 2;
 			snakeFood->y = 3;
+			eaten = 0;
 			column_val = SetBit(column_val, mySnake->y,1); //y
 			column_sel = SetBit(column_sel, mySnake->x, 0); //x
 			PORTC = SetBit(column_val, snakeFood->y,1); //y
@@ -685,8 +689,7 @@ int TickFct_game(int state)
 		{
 			if(!msgDisplayed2)
 			{
-				PORTC = 0xFF;
-				PORTB = 0x00;
+				
 				LCD_DisplayString(1,"Game Over");
 				LCD_DisplayStringNoClear(17,"Press to restart");
 				msgDisplayed2 = 1;
@@ -738,6 +741,8 @@ int TickFct_showSnake(int state)
 			}
 			if(gameOver)
 			{
+				PORTC = 0xFF;
+				PORTB = 0x00;
 				break;
 			}
 			
@@ -773,7 +778,6 @@ int main(void)
 	tasks[i].period = 1;
 	tasks[i].TickFct = &TickFct_showSnake;
 
-	
 	LCD_init();
 	adc_init();
 	LCD_CreateCustomChar(1, leftCustom);
